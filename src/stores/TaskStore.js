@@ -21,7 +21,7 @@ export const useTaskStore = defineStore("taskStore", {
   actions: {
     async getTasks() {
       this.loading = true;
-      const res = await fetch("http://localhost:3000/tasks");
+      const res = await fetch("https://jsonplaceholder.typicode.com/posts");
       const data = await res.json();
 
       this.tasks = data;
@@ -30,7 +30,7 @@ export const useTaskStore = defineStore("taskStore", {
     async addTask(task) {
       this.tasks.unshift(task);
 
-      const res = await fetch("http://localhost:3000/tasks", {
+      const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
         method: "POST",
         body: JSON.stringify(task),
         headers: { "Content-Type": "application/json" },
@@ -40,22 +40,29 @@ export const useTaskStore = defineStore("taskStore", {
       }
     },
     async deleteTask(id) {
-      this.tasks = this.tasks.filter((task) => task.id !== id);
+      
+      const userConfirmed = confirm(`Are you sure you want to delete this item id ${id} ?`);
+      if(userConfirmed){
 
-      const res = await fetch(`http://localhost:3000/tasks/${id}`, {
-        method: "DELETE",
-      });
+        this.tasks = this.tasks.filter((task) => task.id !== id);
+
+        const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
+          method: "DELETE",
+        });
+      }
+      
       if (res.error) {
         console.log(res.error);
       }
     },
-    async toggleTask(id) {
-      const task = this.tasks.find((task) => task.id === id);
-      task.isFav = !task.isFav;
-
-      const res = await fetch(`http://localhost:3000/tasks/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ isFav: task.isFav }),
+    async toggleTask(id, task) {
+      const index = this.tasks.findIndex((item) => item.id == id);
+      if (index !== -1) {
+        this.tasks[index].title =  task;
+      }
+      const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title: task }),
         headers: { "Content-Type": "application/json" },
       });
       if (res.error) {
